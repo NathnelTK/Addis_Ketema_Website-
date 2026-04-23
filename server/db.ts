@@ -1,31 +1,46 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import initSqlJs, { type Database as SqlJsDatabase } from "sql.js";
+import { drizzle, type SQLJsDatabase } from "drizzle-orm/sql-js";
 import { eq, desc } from "drizzle-orm";
+import fs from "node:fs";
 import path from "node:path";
 import {
-  users, applications, newsEvents, uploadedFiles,
-  type InsertUser, type InsertApplication, type InsertNewsEvent, type InsertUploadedFile,
+  users,
+  applications,
+  newsEvents,
+  uploadedFiles,
+  type InsertUser,
+  type InsertApplication,
+  type InsertNewsEvent,
+  type InsertUploadedFile,
 } from "../drizzle/schema";
 
 const DB_PATH = path.resolve(process.cwd(), "school.db");
 
-let _db: ReturnType<typeof drizzle> | null = null;
+let _sqlDb: SqlJsDatabase | null = null;
+let _db: SQLJsDatabase | null = null;
 
-export function getDb() {
-  if (!_db) {
-    const sqlite = new Database(DB_PATH);
-    // Enable WAL mode for better concurrent read performance
-    sqlite.pragma("journal_mode = WAL");
-    _db = drizzle(sqlite);
-  }
-  return _db;
+function saveDb() {
+  if (!_sqlDb) return;
+  const data = _sqlDb.export();
+  fs.writeFileSync(DB_PATH, Buffer.from(data));
 }
 
-export function initDb() {
-  const db = getDb();
-  // Create tables if they don't exist (SQLite auto-migration)
-  const sqlite = new Database(DB_PATH);
-  sqlite.exec(`
+export { saveDb };
+
+export async function initDb() {
+  const SQL = await initSqlJs();
+
+  if (fs.existsSync(DB_PATH)) {
+    const fileBuffer = fs.readFileSync(DB_PATH);
+    _sqlDb = new SQL.Database(fileBuffer);
+  } else {
+    _sqlDb = new SQL.Database();
+  }
+
+  _db = drizzle(_sqlDb);
+
+  // Create tables if they don't exist
+  _sqlDb.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       openId TEXT NOT NULL UNIQUE,
@@ -37,7 +52,6 @@ export function initDb() {
       updatedAt TEXT NOT NULL DEFAULT (datetime('now')),
       lastSignedIn TEXT NOT NULL DEFAULT (datetime('now'))
     );
-
     CREATE TABLE IF NOT EXISTS applications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -49,7 +63,6 @@ export function initDb() {
       createdAt TEXT NOT NULL DEFAULT (datetime('now')),
       updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
     );
-
     CREATE TABLE IF NOT EXISTS news_events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -61,7 +74,6 @@ export function initDb() {
       createdAt TEXT NOT NULL DEFAULT (datetime('now')),
       updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
     );
-
     CREATE TABLE IF NOT EXISTS uploaded_files (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       fileName TEXT NOT NULL,
@@ -77,16 +89,26 @@ export function initDb() {
       updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-  sqlite.close();
-  return db;
+
+  saveDb();
+}
+
+export function getDb(): SQLJsDatabase {
+  if (!_db) throw new Error("Database not initialized. Call initDb() first.");
+  return _db;
+}
+
+// Persist after every write
+function withSave<T>(result: T): T {
+  saveDb();
+  return result;
 }
 
 // ── Users ──────────────────────────────────────────────────────────────────
 
 export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) throw new Error("User openId is required for upsert");
+  if (!user.openId) throw new Error("User openId is required");
   const db = getDb();
-
   const existing = await getUserByOpenId(user.openId);
   if (existing) {
     const updateData: Partial<InsertUser> = { lastSignedIn: new Date().toISOString() };
@@ -94,16 +116,18 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.email !== undefined) updateData.email = user.email;
     if (user.loginMethod !== undefined) updateData.loginMethod = user.loginMethod;
     if (user.role !== undefined) updateData.role = user.role;
-    db.update(users).set(updateData).where(eq(users.openId, user.openId)).run();
+    withSave(db.update(users).set(updateData).where(eq(users.openId, user.openId)).run());
   } else {
-    db.insert(users).values({
-      openId: user.openId,
-      name: user.name ?? null,
-      email: user.email ?? null,
-      loginMethod: user.loginMethod ?? null,
-      role: user.role ?? "user",
-      lastSignedIn: new Date().toISOString(),
-    }).run();
+    withSave(
+      db.insert(users).values({
+        openId: user.openId,
+        name: user.name ?? null,
+        email: user.email ?? null,
+        loginMethod: user.loginMethod ?? null,
+        role: user.role ?? "user",
+        lastSignedIn: new Date().toISOString(),
+      }).run()
+    );
   }
 }
 
@@ -117,7 +141,7 @@ export async function getUserByOpenId(openId: string) {
 
 export async function createApplication(app: InsertApplication) {
   const db = getDb();
-  return db.insert(applications).values(app).run();
+  return withSave(db.insert(applications).values(app).run());
 }
 
 export async function getApplications() {
@@ -133,14 +157,14 @@ export async function getApplicationById(id: number) {
 
 export async function updateApplicationStatus(id: number, status: string) {
   const db = getDb();
-  return db.update(applications).set({ status: status as any }).where(eq(applications.id, id)).run();
+  return withSave(db.update(applications).set({ status: status as any }).where(eq(applications.id, id)).run());
 }
 
 // ── News / Events ──────────────────────────────────────────────────────────
 
 export async function createNewsEvent(event: InsertNewsEvent) {
   const db = getDb();
-  return db.insert(newsEvents).values(event).run();
+  return withSave(db.insert(newsEvents).values(event).run());
 }
 
 export async function getNewsEvents(limit?: number) {
@@ -157,19 +181,19 @@ export async function getNewsEventById(id: number) {
 
 export async function updateNewsEvent(id: number, event: Partial<InsertNewsEvent>) {
   const db = getDb();
-  return db.update(newsEvents).set(event).where(eq(newsEvents.id, id)).run();
+  return withSave(db.update(newsEvents).set(event).where(eq(newsEvents.id, id)).run());
 }
 
 export async function deleteNewsEvent(id: number) {
   const db = getDb();
-  return db.delete(newsEvents).where(eq(newsEvents.id, id)).run();
+  return withSave(db.delete(newsEvents).where(eq(newsEvents.id, id)).run());
 }
 
 // ── Uploaded Files ─────────────────────────────────────────────────────────
 
 export async function createUploadedFile(file: InsertUploadedFile) {
   const db = getDb();
-  return db.insert(uploadedFiles).values(file).run();
+  return withSave(db.insert(uploadedFiles).values(file).run());
 }
 
 export async function getUploadedFiles(resourceType?: string, gradeLevel?: string, subject?: string) {
@@ -189,12 +213,11 @@ export async function getUploadedFileById(id: number) {
 
 export async function deleteUploadedFile(id: number) {
   const db = getDb();
-  return db.delete(uploadedFiles).where(eq(uploadedFiles.id, id)).run();
+  return withSave(db.delete(uploadedFiles).where(eq(uploadedFiles.id, id)).run());
 }
 
 export async function countRows(table: "news_events" | "applications" | "uploaded_files"): Promise<number> {
   const db = getDb();
   const map = { news_events: newsEvents, applications, uploaded_files: uploadedFiles };
-  const result = db.select().from(map[table]).all();
-  return result.length;
+  return db.select().from(map[table]).all().length;
 }

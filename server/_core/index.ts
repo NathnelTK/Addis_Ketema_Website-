@@ -31,7 +31,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 
 async function startServer() {
   // Initialize SQLite database and seed demo data
-  initDb();
+  await initDb();
   await seedIfEmpty();
 
   const app = express();
