@@ -47,7 +47,7 @@ export const appRouter = router({
           email: 'admin@addisketema.edu.et',
           loginMethod: 'local',
           role: 'admin',
-          lastSignedIn: new Date(),
+          lastSignedIn: new Date().toISOString(),
         }));
         const sessionToken = await sdk.createSessionToken(adminOpenId, {
           name: 'Admin',
@@ -121,7 +121,7 @@ export const appRouter = router({
           title: input.title,
           content: input.content,
           imageUrl: input.imageUrl,
-          eventDate: input.eventDate,
+          eventDate: input.eventDate ? input.eventDate.toISOString() : undefined,
           category: input.category,
           featured: input.featured || 0,
         });
