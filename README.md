@@ -165,6 +165,6 @@ This project is developed for Addis Ketema General Secondary School.
 ---
 
 **Contact Information:**
-- 📞 +251 11 123 4567
-- ✉️ info@addisketema.edu.et
+- 📞 +251 92 113 4567
+- ✉️ t.me/akpssociety2013
 - 📍 Addis Ababa, Ethiopia
