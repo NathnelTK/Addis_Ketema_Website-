@@ -189,16 +189,27 @@ export default function Contact() {
               </form>
             </div>
 
-            {/* Map Placeholder */}
+            {/* OpenStreetMap Embed */}
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-8">Our Location</h2>
-              <div className="w-full h-96 bg-gradient-to-br from-blue-200 to-blue-400 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin size={48} className="text-blue-600 mx-auto mb-4" />
-                  <p className="text-blue-700 font-semibold">Map Placeholder</p>
-                  <p className="text-blue-600 text-sm">Addis Ababa, Ethiopia</p>
-                </div>
+              <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+                <iframe
+                  title="Addis Ketema School location map"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=38.7300%2C8.9700%2C38.7800%2C9.0200&layer=mapnik&marker=8.9950%2C38.7550"
+                  className="w-full h-96"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
+              <a
+                href="https://www.openstreetmap.org/?mlat=8.9950&mlon=38.7550#map=15/8.9950/38.7550"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+              >
+                <MapPin size={16} />
+                Open larger map
+              </a>
             </div>
           </div>
         </div>

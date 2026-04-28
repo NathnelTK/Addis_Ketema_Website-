@@ -6,6 +6,9 @@ import { trpc } from '@/lib/trpc';
 
 export default function Home() {
   const { data: newsEvents } = trpc.newsEvents.list.useQuery({ limit: 3 });
+  const campusImage = 'https://images.unsplash.com/photo-1513258496099-48168024aec0?w=1200&q=80';
+  const gradesNineTenImage = 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&q=80';
+  const gradesElevenTwelveImage = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=900&q=80';
 
   const highlights = [
     {
@@ -108,7 +111,7 @@ export default function Home() {
             </div>
             <div className="rounded-2xl overflow-hidden shadow-xl">
               <img
-                src="/students.jpg"
+                src={campusImage}
                 alt="Students at school"
                 className="w-full h-80 object-cover"
               />
@@ -146,7 +149,7 @@ export default function Home() {
             <div className="rounded-xl overflow-hidden shadow-md group">
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src="/reward.jpg"
+                  src={gradesNineTenImage}
                   alt="Grades 9-10"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -162,7 +165,7 @@ export default function Home() {
             <div className="rounded-xl overflow-hidden shadow-md group">
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src="/gold.jpg"
+                  src={gradesElevenTwelveImage}
                   alt="Grades 11-12"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />

@@ -24,7 +24,7 @@ export default function AdminLogin() {
       await loginMutation.mutateAsync({ password });
       await utils.auth.me.fetch();
       toast.success('Logged in successfully');
-      setLocation('/admin');
+      window.location.assign('/admin');
     } catch {
       toast.error('Invalid password');
     }
