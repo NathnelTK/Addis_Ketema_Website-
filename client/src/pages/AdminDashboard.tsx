@@ -1,8 +1,9 @@
+import { useEffect } from 'react';
 import { useAuth } from '@/_core/hooks/useAuth';
 import AdminLayout from '@/components/AdminLayout';
 import { trpc } from '@/lib/trpc';
 import { BarChart3, FileText, Users, Upload } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { Link, useLocation } from 'wouter';
 
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
@@ -13,6 +14,12 @@ export default function AdminDashboard() {
     { enabled: user?.role === 'admin' }
   );
 
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'admin')) {
+      setLocation('/admin/login');
+    }
+  }, [loading, setLocation, user]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -21,9 +28,7 @@ export default function AdminDashboard() {
     );
   }
 
-  // Redirect to login if not admin
   if (!user || user.role !== 'admin') {
-    setLocation('/admin/login');
     return null;
   }
 
@@ -136,34 +141,30 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-bold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a
-              href="/admin/news"
-              className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-center transition-colors"
-            >
-              <FileText size={24} className="text-blue-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-blue-600">Manage News</p>
-            </a>
-            <a
-              href="/admin/applications"
-              className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-center transition-colors"
-            >
-              <Users size={24} className="text-green-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-green-600">View Applications</p>
-            </a>
-            <a
-              href="/admin/resources"
-              className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-center transition-colors"
-            >
-              <Upload size={24} className="text-purple-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-purple-600">Upload Resources</p>
-            </a>
-            <a
-              href="/"
-              className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-center transition-colors"
-            >
-              <BarChart3 size={24} className="text-gray-600 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-gray-600">View Website</p>
-            </a>
+            <Link href="/admin/news">
+              <a className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-center transition-colors">
+                <FileText size={24} className="text-blue-600 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-blue-600">Manage News</p>
+              </a>
+            </Link>
+            <Link href="/admin/applications">
+              <a className="p-4 bg-green-50 hover:bg-green-100 rounded-lg text-center transition-colors">
+                <Users size={24} className="text-green-600 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-green-600">View Applications</p>
+              </a>
+            </Link>
+            <Link href="/admin/resources">
+              <a className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg text-center transition-colors">
+                <Upload size={24} className="text-purple-600 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-purple-600">Upload Resources</p>
+              </a>
+            </Link>
+            <Link href="/">
+              <a className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg text-center transition-colors">
+                <BarChart3 size={24} className="text-gray-600 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-600">View Website</p>
+              </a>
+            </Link>
           </div>
         </div>
       </div>

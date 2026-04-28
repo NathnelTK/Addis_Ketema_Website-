@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'wouter';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -8,6 +8,7 @@ import { ExternalLink, Download, Loader2 } from 'lucide-react';
 export default function PrimaryResources() {
   const [selectedGrade, setSelectedGrade] = useState<string>('1-4');
   const [selectedSubject, setSelectedSubject] = useState<string>('Math');
+  const materialsSectionRef = useRef<HTMLElement | null>(null);
 
   const { data: uploadedFiles, isLoading } = trpc.resources.list.useQuery({
     resourceType: 'primary',
@@ -17,6 +18,11 @@ export default function PrimaryResources() {
 
   const grades = ['1-4', '5-8'];
   const subjects = ['Math', 'English', 'Science', 'Social Studies', 'Arts', 'Physical Education'];
+
+  const handleSubjectOverviewClick = (subject: string) => {
+    setSelectedSubject(subject);
+    materialsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   // Ethiopian textbook resources
   const ethiopianResources = [
@@ -104,7 +110,7 @@ export default function PrimaryResources() {
       </section>
 
       {/* Uploaded Files Section */}
-      <section className="section-padding bg-green-50">
+      <section ref={materialsSectionRef} className="section-padding bg-green-50">
         <div className="container">
           <h2 className="text-2xl font-bold text-foreground mb-8">Uploaded Materials</h2>
           {isLoading ? (
@@ -190,7 +196,7 @@ export default function PrimaryResources() {
                   {subject === 'Physical Education' && 'Sports, fitness, and health education.'}
                 </p>
                 <button
-                  onClick={() => setSelectedSubject(subject)}
+                  onClick={() => handleSubjectOverviewClick(subject)}
                   className="text-green-600 font-semibold hover:text-green-700 text-sm"
                 >
                   View Materials →

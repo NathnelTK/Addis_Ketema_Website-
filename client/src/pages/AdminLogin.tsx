@@ -1,20 +1,28 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 import { useLocation } from 'wouter';
 import { Lock } from 'lucide-react';
+import { useAuth } from '@/_core/hooks/useAuth';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [, setLocation] = useLocation();
+  const { user, loading } = useAuth();
   const loginMutation = trpc.auth.adminLogin.useMutation();
   const utils = trpc.useUtils();
+
+  useEffect(() => {
+    if (!loading && user?.role === 'admin') {
+      setLocation('/admin');
+    }
+  }, [loading, setLocation, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await loginMutation.mutateAsync({ password });
-      await utils.auth.me.invalidate();
+      await utils.auth.me.fetch();
       toast.success('Logged in successfully');
       setLocation('/admin');
     } catch {

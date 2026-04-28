@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'wouter';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -8,6 +8,7 @@ import { ExternalLink, Download, Loader2 } from 'lucide-react';
 export default function SecondaryResources() {
   const [selectedGrade, setSelectedGrade] = useState<string>('9-10');
   const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
+  const materialsSectionRef = useRef<HTMLElement | null>(null);
 
   const { data: uploadedFiles, isLoading } = trpc.resources.list.useQuery({
     resourceType: 'secondary',
@@ -17,6 +18,14 @@ export default function SecondaryResources() {
 
   const grades = ['9-10', '11-12'];
   const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'History', 'Geography', 'Economics'];
+  const grade11PlayStoreUrl = 'https://play.google.com/store/apps/details?id=com.binaryabyssinia.ethio_books_grade_eleven&hl=en';
+
+  const handleSubjectOverviewClick = (subject: string) => {
+    setSelectedGrade('11-12');
+    setSelectedSubject(subject);
+    materialsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.open(grade11PlayStoreUrl, '_blank', 'noopener,noreferrer');
+  };
 
   // Ethiopian textbook resources
   const ethiopianResources = [
@@ -104,7 +113,7 @@ export default function SecondaryResources() {
       </section>
 
       {/* Uploaded Files Section */}
-      <section className="section-padding bg-blue-50">
+      <section ref={materialsSectionRef} className="section-padding bg-blue-50">
         <div className="container">
           <h2 className="text-2xl font-bold text-foreground mb-8">Uploaded Materials</h2>
           {isLoading ? (
@@ -192,10 +201,10 @@ export default function SecondaryResources() {
                   {subject === 'Economics' && 'Microeconomics, macroeconomics, and economic principles.'}
                 </p>
                 <button
-                  onClick={() => setSelectedSubject(subject)}
+                  onClick={() => handleSubjectOverviewClick(subject)}
                   className="text-blue-600 font-semibold hover:text-blue-700 text-sm"
                 >
-                  View Materials →
+                  View Materials & Grade 11 App →
                 </button>
               </div>
             ))}

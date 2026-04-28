@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/components/AdminLayout';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
@@ -27,8 +27,14 @@ export default function AdminResources() {
   const uploadMutation = trpc.resources.upload.useMutation();
   const deleteMutation = trpc.resources.delete.useMutation();
 
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'admin')) {
+      setLocation('/admin/login');
+    }
+  }, [loading, setLocation, user]);
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" /></div>;
-  if (!user || user.role !== 'admin') { setLocation('/admin/login'); return null; }
+  if (!user || user.role !== 'admin') { return null; }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

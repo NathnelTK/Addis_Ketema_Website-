@@ -108,7 +108,7 @@ export default function Home() {
             </div>
             <div className="rounded-2xl overflow-hidden shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80"
+                src="/students.jpg"
                 alt="Students at school"
                 className="w-full h-80 object-cover"
               />
@@ -146,7 +146,7 @@ export default function Home() {
             <div className="rounded-xl overflow-hidden shadow-md group">
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80"
+                  src="/reward.jpg"
                   alt="Grades 9-10"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -162,7 +162,7 @@ export default function Home() {
             <div className="rounded-xl overflow-hidden shadow-md group">
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600&q=80"
+                  src="/gold.jpg"
                   alt="Grades 11-12"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
