@@ -24,6 +24,8 @@ export type SessionPayload = {
   name: string;
 };
 
+const DEFAULT_LOCAL_APP_ID = "local-admin-app";
+
 const EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
@@ -171,7 +173,7 @@ class SDKServer {
     return this.signSession(
       {
         openId,
-        appId: ENV.appId,
+        appId: ENV.appId || DEFAULT_LOCAL_APP_ID,
         name: options.name || "",
       },
       options
@@ -211,10 +213,12 @@ class SDKServer {
         algorithms: ["HS256"],
       });
       const { openId, appId, name } = payload as Record<string, unknown>;
+      const normalizedAppId =
+        isNonEmptyString(appId) ? appId : ENV.appId || DEFAULT_LOCAL_APP_ID;
 
       if (
         !isNonEmptyString(openId) ||
-        !isNonEmptyString(appId) ||
+        !isNonEmptyString(normalizedAppId) ||
         !isNonEmptyString(name)
       ) {
         console.warn("[Auth] Session payload missing required fields");
@@ -223,7 +227,7 @@ class SDKServer {
 
       return {
         openId,
-        appId,
+        appId: normalizedAppId,
         name,
       };
     } catch (error) {

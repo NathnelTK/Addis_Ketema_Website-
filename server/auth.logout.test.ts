@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import { COOKIE_NAME } from "../shared/const";
 import type { TrpcContext } from "./_core/context";
+import { sdk } from "./_core/sdk";
 
 type CookieCall = {
   name: string;
@@ -57,6 +58,22 @@ describe("auth.logout", () => {
       sameSite: "none",
       httpOnly: true,
       path: "/",
+    });
+  });
+});
+
+describe("local admin session", () => {
+  it("creates a valid session token without Manus app id env", async () => {
+    const token = await sdk.createSessionToken("local-admin", {
+      name: "Admin",
+    });
+
+    const session = await sdk.verifySession(token);
+
+    expect(session).toMatchObject({
+      openId: "local-admin",
+      name: "Admin",
+      appId: "local-admin-app",
     });
   });
 });

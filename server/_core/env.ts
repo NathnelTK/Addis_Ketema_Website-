@@ -1,5 +1,5 @@
 export const ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
+  appId: process.env.VITE_APP_ID ?? "local-admin-app",
   cookieSecret: process.env.JWT_SECRET ?? "school-secret-key-change-in-production",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
